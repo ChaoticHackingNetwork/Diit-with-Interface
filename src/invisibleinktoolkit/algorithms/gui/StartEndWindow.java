@@ -1,0 +1,114 @@
+// 
+// Decompiled by Procyon v0.5.36
+// 
+
+package invisibleinktoolkit.algorithms.gui;
+
+import java.awt.event.ActionEvent;
+import java.awt.Component;
+import java.awt.Container;
+import javax.swing.BoxLayout;
+import java.awt.LayoutManager;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import javax.swing.JPanel;
+import java.awt.Dimension;
+import java.awt.Frame;
+import javax.swing.JButton;
+import invisibleinktoolkit.stego.StegoAlgorithm;
+import java.awt.event.ActionListener;
+import javax.swing.JDialog;
+
+public class StartEndWindow extends JDialog implements ActionListener
+{
+    private WriteableBitsPanel mBitsPanel;
+    private LSBMatchPanel mLSBMatch;
+    private StegoAlgorithm mAlgorithm;
+    private JButton mOkButton;
+    private JButton mCancelButton;
+    private static final long serialVersionUID = 0L;
+    
+    public StartEndWindow(final Frame parent, final StegoAlgorithm algorithm) {
+        super(parent, "Set the algorithm options", true);
+        final int start = algorithm.getStartBits();
+        final int end = algorithm.getEndBits();
+        this.mBitsPanel = new WriteableBitsPanel(start, end);
+        this.mLSBMatch = new LSBMatchPanel(this, algorithm.getMatch());
+        (this.mOkButton = new JButton("OK")).setPreferredSize(new Dimension(150, 26));
+        (this.mCancelButton = new JButton("Cancel")).setPreferredSize(new Dimension(150, 26));
+        final JPanel displaypanel = new JPanel();
+        final GridBagLayout gridbag = new GridBagLayout();
+        final GridBagConstraints c = new GridBagConstraints();
+        displaypanel.setLayout(gridbag);
+        displaypanel.setPreferredSize(new Dimension(620, 170));
+        final JPanel buttonpanel = new JPanel();
+        buttonpanel.setPreferredSize(new Dimension(300, 30));
+        buttonpanel.setLayout(new BoxLayout(buttonpanel, 0));
+        buttonpanel.add(this.mOkButton);
+        final JPanel spacer1 = new JPanel();
+        spacer1.setPreferredSize(new Dimension(20, 10));
+        buttonpanel.add(spacer1);
+        buttonpanel.add(this.mCancelButton);
+        c.weightx = 0.0;
+        c.gridy = 0;
+        c.gridwidth = 0;
+        gridbag.setConstraints(this.mBitsPanel, c);
+        displaypanel.add(this.mBitsPanel);
+        c.weightx = 0.0;
+        c.gridy = 1;
+        c.gridwidth = 0;
+        gridbag.setConstraints(this.mLSBMatch, c);
+        displaypanel.add(this.mLSBMatch);
+        final JPanel spacer2 = new JPanel();
+        spacer2.setPreferredSize(new Dimension(500, 30));
+        c.weightx = 0.0;
+        c.gridy = 2;
+        c.gridwidth = 0;
+        gridbag.setConstraints(spacer2, c);
+        displaypanel.add(spacer2);
+        c.weightx = 0.0;
+        c.gridy = 3;
+        c.gridwidth = 0;
+        gridbag.setConstraints(buttonpanel, c);
+        displaypanel.add(buttonpanel);
+        this.setContentPane(displaypanel);
+        final JPanel fillerpanel = new JPanel();
+        fillerpanel.setPreferredSize(new Dimension(500, 10));
+        c.weightx = 0.0;
+        c.gridy = 4;
+        c.gridwidth = 0;
+        gridbag.setConstraints(fillerpanel, c);
+        displaypanel.add(fillerpanel);
+        this.mAlgorithm = algorithm;
+        this.mOkButton.addActionListener(this);
+        this.mCancelButton.addActionListener(this);
+        this.pack();
+        this.setResizable(false);
+        this.setLocationRelativeTo(parent);
+        this.setVisible(true);
+    }
+    
+    public void actionPerformed(final ActionEvent e) {
+        if (e.getActionCommand().equalsIgnoreCase("cancel")) {
+            this.dispose();
+        }
+        else if (e.getActionCommand().equalsIgnoreCase("ok")) {
+            if (!this.mLSBMatch.shouldMatch()) {
+                this.mAlgorithm.setStartBits(this.mBitsPanel.getStartBit());
+                this.mAlgorithm.setEndBits(this.mBitsPanel.getEndBit());
+            }
+            else {
+                this.mAlgorithm.setStartBits(0);
+                this.mAlgorithm.setEndBits(0);
+            }
+            this.mAlgorithm.setMatch(this.mLSBMatch.shouldMatch());
+            this.dispose();
+        }
+        else if (this.mLSBMatch.shouldMatch()) {
+            this.mBitsPanel.setEnabled(false);
+        }
+        else {
+            this.mBitsPanel.setEnabled(true);
+        }
+    }
+}
